@@ -1,0 +1,24 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (NUNCA subir los .env reales)
+.env
+.env.local
+.env.*.local
+server/.env
+client/.env
+
+# Builds
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

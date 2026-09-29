@@ -2,6 +2,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const config = require('./config/env');
 const { notFoundHandler, errorHandler } = require('./shared/middlewares/error.middleware');
@@ -22,6 +23,7 @@ const app = express();
 app.use(cors({ origin: config.cors.clientUrl, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // --- Health check ---
 app.get('/health', (req, res) => {

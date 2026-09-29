@@ -6,6 +6,7 @@ const Product = require('../features/products/product.model');
 const Order = require('../features/orders/order.model');
 const OrderItem = require('../features/orders/orderItem.model');
 const Quote = require('../features/quotes/quote.model');
+const RefreshToken = require('../features/auth/refreshToken.model');
 
 /**
  * Punto unico donde se declaran las relaciones entre los modelos de cada feature.
@@ -24,4 +25,9 @@ OrderItem.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 Product.hasMany(OrderItem, { foreignKey: 'product_id', as: 'orderItems' });
 OrderItem.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
-module.exports = { sequelize, User, Product, Order, OrderItem, Quote };
+// Sesiones y tokens de refresco del usuario con borrado en cascada.
+User.hasMany(RefreshToken, { foreignKey: 'user_id', as: 'refreshTokens', onDelete: 'CASCADE' });
+RefreshToken.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+module.exports = { sequelize, User, Product, Order, OrderItem, Quote, RefreshToken };
+

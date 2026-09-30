@@ -34,4 +34,11 @@ class NotFoundError extends AppError {
   }
 }
 
-module.exports = { AppError, BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError };
+class ConflictError extends AppError {
+  constructor(message = 'Conflicto con recurso existente', details = null) {
+    super(message, 409, details);
+  }
+}
+
+module.exports = { AppError, BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, ConflictError };
+

@@ -1,11 +1,20 @@
 'use strict';
 
 const authService = require('./auth.service');
+const { setAuthCookies } = require('./auth.helper');
 
 async function register(req, res, next) {
   try {
-    const result = await authService.register(req.body);
-    res.status(201).json(result);
+    const meta = {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    };
+
+    const { user, tokens } = await authService.register(req.body, meta);
+
+    setAuthCookies(res, tokens);
+
+    res.status(201).json(user);
   } catch (error) {
     next(error);
   }

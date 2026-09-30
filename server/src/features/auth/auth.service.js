@@ -2,12 +2,15 @@
 
 const bcrypt = require('bcrypt');
 const User = require('../users/user.model');
-const { BadRequestError, ConflictError } = require('../../shared/utils/errors');
+const userService = require('../users/user.service');
+const { BadRequestError, ConflictError, UnauthorizedError } = require('../../shared/utils/errors');
 const { generateAccessToken, createRefreshToken } = require('./auth.helper');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const BCRYPT_ROUNDS = 10;
 const MIN_PASSWORD_LENGTH = 8;
+// Hash sintético válido para mitigar ataques de temporización si el usuario no existe
+const DUMMY_HASH = '$2b$10$7EqJtq98hPqEX7fNZaFWoO.8/RzLw5uJm0tYgNn/3v86Mfq8tSg4G';
 
 /**
  * Registra un nuevo usuario con rol forzado a 'cliente',
@@ -77,8 +80,44 @@ async function register(data = {}, meta = {}) {
   };
 }
 
-async function login(/* credenciales */) {
-  throw new Error('auth.service.login: pendiente de implementar');
+/**
+ * Autentica un usuario mediante email y contraseña.
+ * Devuelve los datos del usuario (sin password_hash) y los tokens generados.
+ * Retorna siempre 401 UnauthorizedError con el mismo mensaje si falla email o password.
+ */
+async function login(credentials = {}, meta = {}) {
+  const { email, password } = credentials;
+
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
+    throw new UnauthorizedError('Credenciales inválidas');
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await userService.getUserByEmail(normalizedEmail);
+
+  if (!user) {
+    throw new UnauthorizedError('Credenciales inválidas');
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+  if (!isPasswordValid) {
+    throw new UnauthorizedError('Credenciales inválidas');
+  }
+
+  // Generar sesión: access token y refresh token persistido en base
+  const accessToken = generateAccessToken(user);
+  const refreshToken = await createRefreshToken(user, meta);
+
+  const userJson = user.toJSON();
+  delete userJson.password_hash;
+
+  return {
+    user: userJson,
+    tokens: {
+      accessToken,
+      refreshToken,
+    },
+  };
 }
 
 async function getProfile(userId) {

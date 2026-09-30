@@ -17,7 +17,6 @@ function generateAccessToken(user) {
     {
       id: user.id,
       rol: user.rol,
-      email: user.email,
     },
     config.auth.jwtSecret,
     { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
@@ -71,7 +70,7 @@ function setAuthCookies(res, { accessToken, refreshToken }) {
     secure: isProd,
     sameSite: isProd ? 'none' : 'lax',
     maxAge: REFRESH_TOKEN_MS, // 7 días
-    path: '/api/auth',
+    path: '/api/auth/refresh',
   });
 }
 
@@ -80,7 +79,7 @@ function setAuthCookies(res, { accessToken, refreshToken }) {
  */
 function clearAuthCookies(res) {
   res.clearCookie('access_token', { path: '/' });
-  res.clearCookie('refresh_token', { path: '/api/auth' });
+  res.clearCookie('refresh_token', { path: '/api/auth/refresh' });
 }
 
 module.exports = {

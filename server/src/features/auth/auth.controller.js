@@ -22,8 +22,16 @@ async function register(req, res, next) {
 
 async function login(req, res, next) {
   try {
-    const result = await authService.login(req.body);
-    res.json(result);
+    const meta = {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    };
+
+    const { user, tokens } = await authService.login(req.body, meta);
+
+    setAuthCookies(res, tokens);
+
+    res.json(user);
   } catch (error) {
     next(error);
   }

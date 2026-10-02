@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getApiErrorMessage } from '../../shared/services';
 import type { Product } from '../../shared/types';
-import { fetchProducts } from '../catalog/catalog.service';
-import { deleteProduct } from './admin.service';
+import { deleteProduct, fetchProducts } from './products.service';
 
 export function useAdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);

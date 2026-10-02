@@ -1,7 +1,7 @@
 import { Link, Outlet } from 'react-router-dom';
 
 /** Layout publico de la tienda: header, contenido de la ruta y footer. */
-export function Layout() {
+export function PublicLayout() {
   return (
     <div className="layout">
       <header className="layout__header">

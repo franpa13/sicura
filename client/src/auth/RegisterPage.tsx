@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Button, PageHeader } from '../../shared/components';
-import type { UserTipo } from '../../shared/types';
+import { Button, PageHeader } from '../shared/components';
+import type { UserTipo } from '../shared/types';
 import { useAuth } from './useAuth';
 import type { RegisterInput } from './types';
 

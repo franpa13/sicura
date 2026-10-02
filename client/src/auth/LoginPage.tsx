@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, PageHeader } from '../../shared/components';
+import { Button, PageHeader } from '../shared/components';
 import { useAuth } from './useAuth';
 import type { LoginCredentials } from './types';
 

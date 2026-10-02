@@ -1,5 +1,5 @@
-import { apiClient } from '../../shared/services';
-import type { User } from '../../shared/types';
+import { apiClient } from '../shared/services';
+import type { User } from '../shared/types';
 import type { LoginCredentials, RegisterInput } from './types';
 
 export async function login(credentials: LoginCredentials): Promise<User> {

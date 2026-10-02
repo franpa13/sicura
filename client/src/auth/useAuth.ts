@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { getApiErrorMessage } from '../../shared/services';
-import type { User } from '../../shared/types';
+import { getApiErrorMessage } from '../shared/services';
+import type { User } from '../shared/types';
 import { login as loginRequest, logout as logoutRequest, register as registerRequest } from './auth.service';
 import type { LoginCredentials, RegisterInput } from './types';
 

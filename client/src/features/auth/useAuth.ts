@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { getApiErrorMessage, setAuthToken } from '../../shared/services';
+import { getApiErrorMessage } from '../../shared/services';
 import type { User } from '../../shared/types';
-import { login as loginRequest, register as registerRequest } from './auth.service';
+import { login as loginRequest, logout as logoutRequest, register as registerRequest } from './auth.service';
 import type { LoginCredentials, RegisterInput } from './types';
 
 /**
@@ -17,9 +17,7 @@ export function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      const session = await loginRequest(credentials);
-      setAuthToken(session.token);
-      setUser(session.user);
+      setUser(await loginRequest(credentials));
       return true;
     } catch (err: unknown) {
       setError(getApiErrorMessage(err));
@@ -33,9 +31,7 @@ export function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      const session = await registerRequest(input);
-      setAuthToken(session.token);
-      setUser(session.user);
+      setUser(await registerRequest(input));
       return true;
     } catch (err: unknown) {
       setError(getApiErrorMessage(err));
@@ -45,9 +41,12 @@ export function useAuth() {
     }
   }
 
-  function logout() {
-    setAuthToken(null);
-    setUser(null);
+  async function logout(): Promise<void> {
+    try {
+      await logoutRequest();
+    } finally {
+      setUser(null);
+    }
   }
 
   return { user, loading, error, login, register, logout };

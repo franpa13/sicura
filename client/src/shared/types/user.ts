@@ -13,8 +13,3 @@ export interface User {
   createdAt?: string;
   updatedAt?: string;
 }
-
-export interface AuthSession {
-  token: string;
-  user: User;
-}

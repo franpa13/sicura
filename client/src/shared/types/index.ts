@@ -1,4 +1,4 @@
-export type { User, UserRol, UserTipo, AuthSession } from './user';
+export type { User, UserRol, UserTipo } from './user';
 export type { Product, ProductCategoria, ProductTipo, ProductInput } from './product';
 export type {
   Order,

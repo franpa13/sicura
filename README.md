@@ -51,7 +51,9 @@ cp .env.example .env    # en Windows: copy .env.example .env
 npm run dev
 ```
 
-Queda en `http://localhost:5173` y pega contra la API definida en `VITE_API_URL`.
+Queda en `http://localhost:5173`. Las llamadas a la API pasan por el proxy de Vite hacia
+`http://localhost:4000`, asi que el navegador ve un solo origen y las cookies de sesion
+funcionan sin CORS.
 
 ### Scripts utiles
 

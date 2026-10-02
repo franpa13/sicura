@@ -2,12 +2,16 @@ import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import type { ApiError } from '../types';
 
-const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+// En desarrollo la API se sirve por el proxy de Vite, asi el navegador ve
+// un solo origen. En produccion se apunta a VITE_API_URL.
+const apiOrigin = import.meta.env.DEV ? '' : import.meta.env.VITE_API_URL;
+const baseURL = `${apiOrigin}/api`;
 
 /** Unico cliente HTTP de la app: todas las features llaman a la API por aca. */
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: `${baseURL}/api`,
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 const TOKEN_STORAGE_KEY = 'sicura.token';

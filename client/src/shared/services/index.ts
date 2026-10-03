@@ -1,1 +1,1 @@
-export { apiClient, setAuthToken, getAuthToken, getApiErrorMessage } from './apiClient';
+export { apiClient, getApiErrorMessage } from './apiClient';

@@ -14,28 +14,6 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-const TOKEN_STORAGE_KEY = 'sicura.token';
-
-export function setAuthToken(token: string | null): void {
-  if (token) {
-    localStorage.setItem(TOKEN_STORAGE_KEY, token);
-  } else {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-  }
-}
-
-export function getAuthToken(): string | null {
-  return localStorage.getItem(TOKEN_STORAGE_KEY);
-}
-
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
 /** Normaliza cualquier error de axios al mensaje que devuelve el backend. */
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError<ApiError>(error)) {

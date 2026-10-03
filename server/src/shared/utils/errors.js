@@ -17,8 +17,9 @@ class BadRequestError extends AppError {
 }
 
 class UnauthorizedError extends AppError {
-  constructor(message = 'No autenticado') {
-    super(message, 401);
+  constructor(message = 'No autenticado', code = null, details = null) {
+    super(message, 401, details);
+    if (code) this.code = code;
   }
 }
 

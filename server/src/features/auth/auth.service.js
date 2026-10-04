@@ -195,4 +195,41 @@ async function rotateRefreshToken(rawRefreshToken, meta = {}) {
   };
 }
 
-module.exports = { register, login, getProfile, rotateRefreshToken, MIN_PASSWORD_LENGTH };
+/**
+ * Revoca el refresh token actual para cerrar sesión.
+ * Si se recibe el refresh token directamente, se revoca por su hash.
+ * Si no viene pero se conoce el userId (por access_token), se revocan sus tokens activos.
+ */
+async function logout({ refreshToken = null, userId = null } = {}) {
+  if (refreshToken && typeof refreshToken === 'string') {
+    const tokenHash = hashToken(refreshToken);
+    await RefreshToken.update(
+      { revoked_at: new Date() },
+      { where: { token_hash: tokenHash, revoked_at: null } }
+    );
+    return;
+  }
+
+  if (userId) {
+    await RefreshToken.update(
+      { revoked_at: new Date() },
+      { where: { user_id: userId, revoked_at: null } }
+    );
+  }
+}
+
+/**
+ * Revoca todas las sesiones activas de un usuario (para cierre de sesión global).
+ */
+async function logoutAll(userId) {
+  if (!userId) {
+    throw new BadRequestError('El ID de usuario es obligatorio');
+  }
+
+  await RefreshToken.update(
+    { revoked_at: new Date() },
+    { where: { user_id: userId, revoked_at: null } }
+  );
+}
+
+module.exports = { register, login, getProfile, rotateRefreshToken, logout, logoutAll, MIN_PASSWORD_LENGTH };

@@ -80,10 +80,25 @@ function setAuthCookies(res, { accessToken, refreshToken }) {
 
 /**
  * Limpia las cookies de sesión (para logout).
+ * Usa exactamente las mismas opciones (path, secure, sameSite, httpOnly)
+ * con las que se crearon para asegurar que el navegador ejecute el borrado.
  */
 function clearAuthCookies(res) {
-  res.clearCookie('access_token', { path: '/' });
-  res.clearCookie('refresh_token', { path: '/api/auth/refresh' });
+  const isProd = config.isProduction;
+
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+  });
+
+  res.clearCookie('refresh_token', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/api/auth/refresh',
+  });
 }
 
 module.exports = {

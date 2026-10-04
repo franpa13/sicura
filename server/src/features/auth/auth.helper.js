@@ -27,18 +27,22 @@ function generateAccessToken(user) {
  * Genera un Refresh Token aleatorio criptográfico (40 bytes hex),
  * calcula su hash SHA-256 y lo persiste en la base de datos asociado al usuario.
  */
-async function createRefreshToken(user, { ip = null, userAgent = null } = {}) {
+async function createRefreshToken(user, { ip = null, userAgent = null, returnRecord = false } = {}) {
   const rawToken = crypto.randomBytes(40).toString('hex');
   const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + REFRESH_TOKEN_MS);
 
-  await RefreshToken.create({
+  const tokenRecord = await RefreshToken.create({
     user_id: user.id,
     token_hash: tokenHash,
     expires_at: expiresAt,
     ip: ip || null,
     user_agent: userAgent || null,
   });
+
+  if (returnRecord) {
+    return { rawToken, tokenRecord };
+  }
 
   return rawToken;
 }

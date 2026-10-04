@@ -3,8 +3,9 @@
 const bcrypt = require('bcrypt');
 const User = require('../users/user.model');
 const userService = require('../users/user.service');
+const RefreshToken = require('./refreshToken.model');
 const { BadRequestError, ConflictError, UnauthorizedError } = require('../../shared/utils/errors');
-const { generateAccessToken, createRefreshToken } = require('./auth.helper');
+const { generateAccessToken, createRefreshToken, hashToken } = require('./auth.helper');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const BCRYPT_ROUNDS = 10;
@@ -124,4 +125,74 @@ async function getProfile(userId) {
   return User.findByPk(userId, { attributes: { exclude: ['password_hash'] } });
 }
 
-module.exports = { register, login, getProfile, MIN_PASSWORD_LENGTH };
+/**
+ * Rota el refresh token por uno nuevo y emite un access token renovado.
+ * Implementa detección de reuso: si el token ya fue reemplazado, invalida todas
+ * las sesiones activas del usuario debido a una posible vulneración de sesión.
+ */
+async function rotateRefreshToken(rawRefreshToken, meta = {}) {
+  if (!rawRefreshToken || typeof rawRefreshToken !== 'string') {
+    throw new UnauthorizedError('Falta el token de actualización', 'REFRESH_TOKEN_MISSING');
+  }
+
+  const tokenHash = hashToken(rawRefreshToken);
+  const tokenRecord = await RefreshToken.findOne({ where: { token_hash: tokenHash } });
+
+  if (!tokenRecord) {
+    throw new UnauthorizedError('Token de actualización inválido o inexistente', 'REFRESH_TOKEN_INVALID');
+  }
+
+  // Detección de reuso: si el token ya fue reemplazado por otro, hay copias concurrentes
+  if (tokenRecord.replaced_by !== null) {
+    console.warn(
+      `[SECURITY] Reuso de refresh token detectado para el usuario ID ${tokenRecord.user_id}. ` +
+        `Token ID reutilizado: ${tokenRecord.id}, reemplazado originalmente por: ${tokenRecord.replaced_by}. ` +
+        `Revocando todas las sesiones del usuario.`
+    );
+
+    // Revocar todas las sesiones del usuario comprometido
+    await RefreshToken.update(
+      { revoked_at: new Date() },
+      { where: { user_id: tokenRecord.user_id, revoked_at: null } }
+    );
+
+    throw new UnauthorizedError('Sesión comprometida detectada. Por favor inicie sesión nuevamente', 'SESSION_COMPROMISED');
+  }
+
+  // Rechazar si venció o está revocado
+  if (tokenRecord.isExpired || tokenRecord.isRevoked) {
+    throw new UnauthorizedError('El token de actualización ha expirado o ha sido revocado', 'REFRESH_TOKEN_EXPIRED');
+  }
+
+  // Verificar que el usuario exista
+  const user = await User.findByPk(tokenRecord.user_id);
+  if (!user) {
+    throw new UnauthorizedError('Usuario no encontrado', 'USER_NOT_FOUND');
+  }
+
+  // Emitir nuevo refresh token en base de datos
+  const { rawToken: newRefreshToken, tokenRecord: newTokenRecord } = await createRefreshToken(user, {
+    ip: meta.ip,
+    userAgent: meta.userAgent,
+    returnRecord: true,
+  });
+
+  // Revocar el token actual apuntando a replaced_by = newTokenRecord.id
+  await tokenRecord.revoke(newTokenRecord.id);
+
+  // Emitir nuevo access token
+  const accessToken = generateAccessToken(user);
+
+  const userJson = user.toJSON();
+  delete userJson.password_hash;
+
+  return {
+    user: userJson,
+    tokens: {
+      accessToken,
+      refreshToken: newRefreshToken,
+    },
+  };
+}
+
+module.exports = { register, login, getProfile, rotateRefreshToken, MIN_PASSWORD_LENGTH };

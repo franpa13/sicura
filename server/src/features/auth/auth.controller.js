@@ -1,7 +1,7 @@
 'use strict';
 
 const authService = require('./auth.service');
-const { setAuthCookies } = require('./auth.helper');
+const { setAuthCookies, clearAuthCookies } = require('./auth.helper');
 
 async function register(req, res, next) {
   try {
@@ -37,6 +37,25 @@ async function login(req, res, next) {
   }
 }
 
+async function refresh(req, res, next) {
+  try {
+    const rawRefreshToken = req.cookies?.refresh_token;
+    const meta = {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    };
+
+    const { user, tokens } = await authService.rotateRefreshToken(rawRefreshToken, meta);
+
+    setAuthCookies(res, tokens);
+
+    res.json(user);
+  } catch (error) {
+    clearAuthCookies(res);
+    next(error);
+  }
+}
+
 async function me(req, res, next) {
   try {
     const user = await authService.getProfile(req.user.id);
@@ -49,4 +68,4 @@ async function me(req, res, next) {
   }
 }
 
-module.exports = { register, login, me };
+module.exports = { register, login, refresh, me };

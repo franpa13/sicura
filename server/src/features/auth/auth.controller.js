@@ -1,5 +1,5 @@
-'use strict';
-
+const jwt = require('jsonwebtoken');
+const config = require('../../config/env');
 const authService = require('./auth.service');
 const { setAuthCookies, clearAuthCookies } = require('./auth.helper');
 
@@ -68,4 +68,43 @@ async function me(req, res, next) {
   }
 }
 
-module.exports = { register, login, refresh, me };
+async function logout(req, res, next) {
+  try {
+    const rawRefreshToken = req.cookies?.refresh_token;
+    let userId = null;
+
+    if (req.user?.id) {
+      userId = req.user.id;
+    } else if (req.cookies?.access_token) {
+      try {
+        const payload = jwt.verify(req.cookies.access_token, config.auth.jwtSecret);
+        userId = payload.id;
+      } catch {
+        const decoded = jwt.decode(req.cookies.access_token);
+        if (decoded?.id) userId = decoded.id;
+      }
+    }
+
+    await authService.logout({ refreshToken: rawRefreshToken, userId });
+    clearAuthCookies(res);
+
+    res.json({ message: 'Sesión cerrada exitosamente' });
+  } catch (error) {
+    clearAuthCookies(res);
+    next(error);
+  }
+}
+
+async function logoutAll(req, res, next) {
+  try {
+    await authService.logoutAll(req.user.id);
+    clearAuthCookies(res);
+
+    res.json({ message: 'Todas las sesiones fueron cerradas exitosamente' });
+  } catch (error) {
+    clearAuthCookies(res);
+    next(error);
+  }
+}
+
+module.exports = { register, login, refresh, me, logout, logoutAll };

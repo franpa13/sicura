@@ -4,7 +4,7 @@ import { CatalogPage, ProductDetailPage } from './features/catalog';
 import { CartPage } from './features/cart';
 import { CheckoutPage } from './features/checkout';
 import { QuoteFormPage } from './features/quotes';
-import { LoginPage, RegisterPage } from './features/auth';
+import { ADMIN_ROLES, LoginPage, ProtectedRoute, RegisterPage } from './features/auth';
 import { AdminDashboardPage, AdminLayout, AdminProductsPage } from './features/admin';
 
 export default function App() {
@@ -24,9 +24,11 @@ export default function App() {
         </Route>
 
         {/* Panel administrativo */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="productos" element={<AdminProductsPage />} />
+        <Route element={<ProtectedRoute roles={ADMIN_ROLES} />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="productos" element={<AdminProductsPage />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<p>Pagina no encontrada</p>} />

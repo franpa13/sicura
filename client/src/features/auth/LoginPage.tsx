@@ -1,17 +1,27 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, PageHeader } from '../../shared/components';
 import { useAuth } from './useAuth';
 import type { LoginCredentials } from './types';
 
+interface RedirectState {
+  from: string;
+}
+
 export function LoginPage() {
   const { loading, error, login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [credentials, setCredentials] = useState<LoginCredentials>({ email: '', password: '' });
+  const destino = (location.state as RedirectState | null)?.from ?? '/catalogo';
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void login(credentials);
+    const exito = await login(credentials);
+    if (exito) {
+      navigate(destino, { replace: true });
+    }
   }
 
   return (

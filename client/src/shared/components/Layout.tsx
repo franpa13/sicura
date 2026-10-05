@@ -1,7 +1,11 @@
 import { Link, Outlet } from 'react-router-dom';
+import { tieneAccesoAdmin, useAuth } from '../../features/auth';
 
 /** Layout publico de la tienda: header, contenido de la ruta y footer. */
 export function Layout() {
+  const { user } = useAuth();
+  const muestraPanel = user !== null && tieneAccesoAdmin(user.rol);
+
   return (
     <div className="layout">
       <header className="layout__header">
@@ -12,6 +16,7 @@ export function Layout() {
           <Link to="/catalogo">Catalogo</Link>
           <Link to="/cotizador">Cotizador empresas</Link>
           <Link to="/carrito">Carrito</Link>
+          {muestraPanel ? <Link to="/admin">Panel</Link> : null}
           <Link to="/login">Ingresar</Link>
         </nav>
       </header>

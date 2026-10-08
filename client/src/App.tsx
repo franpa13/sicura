@@ -4,12 +4,13 @@ import { CatalogPage, ProductDetailPage } from './features/catalog';
 import { CartPage } from './features/cart';
 import { CheckoutPage } from './features/checkout';
 import { QuoteFormPage } from './features/quotes';
-import { ADMIN_ROLES, LoginPage, ProtectedRoute, RegisterPage } from './features/auth';
+import { ADMIN_ROLES, LoginPage, ProtectedRoute, RegisterPage, SessionRedirect } from './features/auth';
 import { AdminDashboardPage, AdminLayout, AdminProductsPage } from './features/admin';
 
 export default function App() {
   return (
     <BrowserRouter>
+      <SessionRedirect />
       <Routes>
         {/* Tienda publica */}
         <Route element={<Layout />}>

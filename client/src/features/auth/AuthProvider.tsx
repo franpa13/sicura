@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { getApiErrorMessage } from '../../shared/services';
+import { getApiErrorMessage, onSessionExpired } from '../../shared/services';
 import type { User } from '../../shared/types';
 import { AuthContext } from './AuthContext';
 import type { AuthContextValue, AuthStatus } from './AuthContext';
@@ -39,6 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelado = true;
     };
   }, []);
+
+  useEffect(
+    () =>
+      onSessionExpired((message) => {
+        setUser(null);
+        setStatus('anonymous');
+        setError(message);
+      }),
+    [],
+  );
 
   async function login(credentials: LoginCredentials): Promise<boolean> {
     setLoading(true);

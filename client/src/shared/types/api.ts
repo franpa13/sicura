@@ -1,6 +1,7 @@
 /** Forma del error que devuelve el backend desde su error middleware. */
 export interface ApiError {
   message: string;
+  code?: string;
   details?: Record<string, unknown>;
 }
 

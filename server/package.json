@@ -8,7 +8,9 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "seed:admin": "node src/scripts/seedAdmin.js"
+    "db:sync": "node src/scripts/syncDb.js",
+    "seed:admin": "node src/scripts/seedAdmin.js",
+    "seed:products": "node src/scripts/seedProducts.js"
   },
   "engines": {
     "node": ">=20"
